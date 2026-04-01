@@ -40,7 +40,7 @@ dependencies:
   just_audio: ^0.9.36
   flutter_animate: ^4.5.0
   fl_chart: ^0.67.0
-  google_fonts: ^6.2.1
+  google_fonts: ^8.0.2
   supabase_flutter: ^2.12.2
 
 dev_dependencies:

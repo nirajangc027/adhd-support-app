@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-import '../theme/app_theme.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -13,6 +12,9 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   static const _teal = Color(0xFF4EC8C8);
+  static const _bg = Color(0xFFF8F3FF);
+  static const _titleColor = Color(0xFF2D2D3A);
+  static const _subtitleColor = Color(0xFF8A8A9A);
 
   @override
   void initState() {
@@ -33,8 +35,6 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
     return Scaffold(
       body: DecoratedBox(
         decoration: const BoxDecoration(
@@ -43,7 +43,7 @@ class _SplashScreenState extends State<SplashScreen> {
             end: Alignment.bottomCenter,
             colors: [
               _teal,
-              Colors.white,
+              _bg,
             ],
           ),
         ),
@@ -53,34 +53,43 @@ class _SplashScreenState extends State<SplashScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: 120,
-                  height: 120,
+                  width: 100,
+                  height: 100,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: _teal.withValues(alpha: 0.15),
+                    color: _teal.withValues(alpha: 0.2),
                   ),
                   alignment: Alignment.center,
                   child: const Icon(
-                    Icons.psychology,
-                    size: 80,
+                    Icons.psychology_rounded,
+                    size: 60,
                     color: _teal,
                   ),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 24),
                 Text(
                   'ADHD Support',
-                  style: textTheme.headlineMedium?.copyWith(
+                  style: GoogleFonts.poppins(
                     fontSize: 32,
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.textPrimary,
+                    fontWeight: FontWeight.w700,
+                    color: _titleColor,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 Text(
                   'Your daily companion',
-                  style: textTheme.bodyLarge?.copyWith(
+                  style: GoogleFonts.poppins(
                     fontSize: 16,
-                    color: AppTheme.textSecondary,
+                    color: _subtitleColor,
+                  ),
+                ),
+                const SizedBox(height: 40),
+                const SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    color: _teal,
                   ),
                 ),
               ],
