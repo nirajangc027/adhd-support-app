@@ -11,10 +11,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:adhd_support_app/main.dart';
 
 void main() {
-  testWidgets('App boots and shows Today tab', (WidgetTester tester) async {
+  testWidgets('App boots to splash', (WidgetTester tester) async {
     await tester.pumpWidget(const ProviderScope(child: App()));
-    await tester.pumpAndSettle();
+    await tester.pump();
 
-    expect(find.text('Today'), findsWidgets);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
 }
