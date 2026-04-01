@@ -15,6 +15,6 @@ void main() {
     await tester.pumpWidget(const ProviderScope(child: App()));
     await tester.pump();
 
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.text('ADHD Support'), findsOneWidget);
   });
 }
