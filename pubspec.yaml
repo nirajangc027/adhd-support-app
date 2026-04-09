@@ -42,6 +42,7 @@ dependencies:
   fl_chart: ^0.67.0
   google_fonts: ^8.0.2
   supabase_flutter: ^2.12.2
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:
