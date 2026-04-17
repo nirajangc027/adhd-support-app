@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -10,7 +12,7 @@ class SignupScreen extends StatefulWidget {
   State<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen> {
+class _SignupScreenState extends State<SignupScreen> with SingleTickerProviderStateMixin {
   static const _teal = Color(0xFF4EC8C8);
   static const _bg = Color(0xFFF8F3FF);
   static const _textDark = Color(0xFF2D2D3A);
@@ -22,13 +24,28 @@ class _SignupScreenState extends State<SignupScreen> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _loading = false;
+  late AnimationController _shakeController;
+
+  @override
+  void initState() {
+    super.initState();
+    _shakeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 520),
+    );
+  }
 
   @override
   void dispose() {
+    _shakeController.dispose();
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _shakeForm() {
+    _shakeController.forward(from: 0);
   }
 
   InputDecoration _inputDecoration({
@@ -58,7 +75,8 @@ class _SignupScreenState extends State<SignupScreen> {
         borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(color: _teal, width: 2),
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 18),
+      constraints: const BoxConstraints(minHeight: 56),
     );
   }
 
@@ -67,14 +85,17 @@ class _SignupScreenState extends State<SignupScreen> {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
     if (name.isEmpty) {
+      _shakeForm();
       _showSnack('Please enter your name');
       return;
     }
     if (email.isEmpty || !email.contains('@')) {
+      _shakeForm();
       _showSnack('Please enter a valid email');
       return;
     }
     if (password.length < 6) {
+      _shakeForm();
       _showSnack('Password must be at least 6 characters');
       return;
     }
@@ -94,9 +115,15 @@ class _SignupScreenState extends State<SignupScreen> {
         context.go('/login');
       }
     } on AuthException catch (e) {
-      if (mounted) _showSnack(e.message);
+      if (mounted) {
+        _shakeForm();
+        _showSnack(e.message);
+      }
     } catch (e) {
-      if (mounted) _showSnack(e.toString());
+      if (mounted) {
+        _shakeForm();
+        _showSnack(e.toString());
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -120,8 +147,18 @@ class _SignupScreenState extends State<SignupScreen> {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 28),
-                child: Column(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: AnimatedBuilder(
+                  animation: _shakeController,
+                  builder: (context, child) {
+                    final t = _shakeController.value;
+                    final o = t <= 0 ? 0.0 : 10 * math.sin(t * math.pi * 6) * (1 - t);
+                    return Transform.translate(
+                      offset: Offset(o, 0),
+                      child: child,
+                    );
+                  },
+                  child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const SizedBox(height: 40),
@@ -241,10 +278,11 @@ class _SignupScreenState extends State<SignupScreen> {
                     const SizedBox(height: 32),
                   ],
                 ),
+                ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(28, 0, 28, 24),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:just_audio/just_audio.dart';
 
+import '../theme/app_theme.dart';
+
 const Color _kBgStart = Color(0xFFF8F3FF);
 const Color _kBgEnd = Color(0xFFEEF6FF);
 const Color _kTeal = Color(0xFF4EC8C8);
@@ -330,6 +332,15 @@ class _FocusScreenState extends State<FocusScreen> {
                 color: selected ? _kTeal : _kGreyLight.withValues(alpha: 0.6),
                 width: selected ? 2 : 1,
               ),
+              boxShadow: selected
+                  ? [
+                      BoxShadow(
+                        color: const Color(0xFF4EC8C8).withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        spreadRadius: 2,
+                      ),
+                    ]
+                  : AppTheme.cardShadow,
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -367,41 +378,40 @@ class _FocusScreenState extends State<FocusScreen> {
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
-            child: Column(
-              children: [
-                Text(
-                  'Focus',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w700,
-                    color: _kText,
-                  ),
-                ),
-                Text(
-                  'One thing at a time',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    color: _kGrey,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Container(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Focus',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w700,
+                          color: _kText,
+                        ),
+                      ),
+                      Text(
+                        'One thing at a time',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: _kGrey,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.06),
-                        blurRadius: 24,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
+                    boxShadow: AppTheme.cardShadow,
                   ),
                   child: Column(
                     children: [
@@ -460,7 +470,7 @@ class _FocusScreenState extends State<FocusScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
+                      const SizedBox(height: 24),
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 280),
                   switchInCurve: Curves.easeOut,
@@ -539,22 +549,16 @@ class _FocusScreenState extends State<FocusScreen> {
                           ),
                         ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
                 _sessionCounterRow(),
-                const SizedBox(height: 28),
+                const SizedBox(height: 24),
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.06),
-                        blurRadius: 24,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
+                    boxShadow: AppTheme.cardShadow,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -611,6 +615,9 @@ class _FocusScreenState extends State<FocusScreen> {
                 ),
               ],
             ),
+          ),
+        );
+            },
           ),
         ),
       ),

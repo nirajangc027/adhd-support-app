@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../theme/app_theme.dart';
+
 const Color _kBg = Color(0xFFF8F3FF);
 const Color _kTeal = Color(0xFF4EC8C8);
 const Color _kPurple = Color(0xFF9B7FD4);
@@ -431,14 +433,8 @@ class _FeelScreenState extends State<FeelScreen> with TickerProviderStateMixin {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: AppTheme.cardShadow,
       ),
       child: child,
     );
@@ -497,7 +493,7 @@ class _FeelScreenState extends State<FeelScreen> with TickerProviderStateMixin {
       backgroundColor: _kBg,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
@@ -522,22 +518,27 @@ class _FeelScreenState extends State<FeelScreen> with TickerProviderStateMixin {
                   return Expanded(
                     child: Column(
                       children: <Widget>[
-                        InkWell(
-                          onTap: () => _onMoodTap(mood),
-                          customBorder: const CircleBorder(),
-                          child: Container(
-                            width: 64,
-                            height: 64,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: selected
-                                  ? _moodColors[index]
-                                  : const Color(0xFFE5E7EB),
-                            ),
-                            child: Icon(
-                              _moodIcons[index],
-                              size: 32,
-                              color: selected ? Colors.white : _kGrey,
+                        AnimatedScale(
+                          scale: selected ? 1.08 : 1.0,
+                          duration: const Duration(milliseconds: 220),
+                          curve: Curves.easeOutBack,
+                          child: InkWell(
+                            onTap: () => _onMoodTap(mood),
+                            customBorder: const CircleBorder(),
+                            child: Container(
+                              width: 64,
+                              height: 64,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: selected
+                                    ? _moodColors[index]
+                                    : const Color(0xFFE5E7EB),
+                              ),
+                              child: Icon(
+                                _moodIcons[index],
+                                size: 32,
+                                color: selected ? Colors.white : _kGrey,
+                              ),
                             ),
                           ),
                         ),
@@ -640,40 +641,44 @@ class _FeelScreenState extends State<FeelScreen> with TickerProviderStateMixin {
                             _showBreathing ? CrossFadeState.showSecond : CrossFadeState.showFirst,
                         firstChild: const SizedBox.shrink(),
                         secondChild: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                          child: Column(
-                            children: <Widget>[
-                              AnimatedContainer(
-                                duration: const Duration(milliseconds: 300),
-                                width: _breathingSize(),
-                                height: _breathingSize(),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: _kTeal.withValues(alpha: 0.30),
-                                  border: Border.all(color: _kTeal, width: 3),
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                const SizedBox(height: 8),
+                                AnimatedContainer(
+                                  duration: const Duration(milliseconds: 300),
+                                  width: _breathingSize(),
+                                  height: _breathingSize(),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: _kTeal.withValues(alpha: 0.30),
+                                    border: Border.all(color: _kTeal, width: 3),
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                _breathingText(),
-                                style: GoogleFonts.poppins(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w700,
-                                  color: _breathingTextColor(),
+                                const SizedBox(height: 20),
+                                Text(
+                                  _breathingText(),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w700,
+                                    color: _breathingTextColor(),
+                                  ),
                                 ),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  _breathingController.stop();
-                                  _breathingController.reset();
-                                  setState(() => _showBreathing = false);
-                                },
-                                child: Text(
-                                  'Stop breathing exercise',
-                                  style: GoogleFonts.poppins(color: _kGrey),
+                                TextButton(
+                                  onPressed: () {
+                                    _breathingController.stop();
+                                    _breathingController.reset();
+                                    setState(() => _showBreathing = false);
+                                  },
+                                  child: Text(
+                                    'Stop breathing exercise',
+                                    style: GoogleFonts.poppins(color: _kGrey),
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -844,31 +849,32 @@ class _FeelScreenState extends State<FeelScreen> with TickerProviderStateMixin {
               const SizedBox(height: 12),
               _softCard(
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: week.map((day) {
                       final score = _latestScoreForDate(day);
                       final today = DateTime.now();
                       final isToday =
                           day.year == today.year && day.month == today.month && day.day == today.day;
-                      return Column(
-                        children: <Widget>[
-                          Text(
-                            _weekdayName(day.weekday),
-                            style: GoogleFonts.poppins(fontSize: 12, color: _kGrey),
-                          ),
-                          const SizedBox(height: 6),
-                          Container(
-                            width: 20,
-                            height: 20,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: score == null ? const Color(0xFFE5E7EB) : _moodColors[score - 1],
-                              border: isToday ? Border.all(color: _kTeal, width: 2) : null,
+                      return Expanded(
+                        child: Column(
+                          children: <Widget>[
+                            Text(
+                              _weekdayName(day.weekday),
+                              style: GoogleFonts.poppins(fontSize: 12, color: _kGrey),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 8),
+                            Container(
+                              width: 22,
+                              height: 22,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: score == null ? const Color(0xFFE5E7EB) : _moodColors[score - 1],
+                                border: isToday ? Border.all(color: _kTeal, width: 2) : null,
+                              ),
+                            ),
+                          ],
+                        ),
                       );
                     }).toList(),
                   ),

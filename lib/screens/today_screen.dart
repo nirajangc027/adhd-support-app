@@ -3,7 +3,11 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../services/notification_service.dart';
+import '../theme/app_theme.dart';
 
 const Color _kBg = Color(0xFFF8F3FF);
 const Color _kTeal = Color(0xFF4EC8C8);
@@ -194,6 +198,15 @@ class _TodayScreenState extends State<TodayScreen> {
       if (mounted) {
         setState(() => _strikingIds.remove(id.toString()));
         if (value) {
+          final prefs = await SharedPreferences.getInstance();
+          if (prefs.getBool(NotificationService.notificationsEnabledPrefKey) ?? true) {
+            await NotificationService().showNotification(
+              id: 100,
+              title: 'Task complete!',
+              body: 'Great work. Keep the momentum going.',
+            );
+          }
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('Task completed! Great work.'),
@@ -267,7 +280,7 @@ class _TodayScreenState extends State<TodayScreen> {
         '${date.day} ${_month(date.month)} ${date.year}';
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
@@ -279,13 +292,7 @@ class _TodayScreenState extends State<TodayScreen> {
             _kPink.withValues(alpha: 0.5),
           ],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: _kTeal.withValues(alpha: 0.12),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        boxShadow: AppTheme.cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -329,7 +336,7 @@ class _TodayScreenState extends State<TodayScreen> {
 
   Widget _sectionTitle(String title, {required IconData icon, required Color iconColor}) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 10),
+      padding: const EdgeInsets.fromLTRB(0, 24, 0, 10),
       child: Row(
         children: [
           Icon(icon, color: iconColor, size: 22),
@@ -347,6 +354,26 @@ class _TodayScreenState extends State<TodayScreen> {
     );
   }
 
+  Widget _animatedTaskCard(Map<String, dynamic> task) {
+    final id = task['id'].toString();
+    return TweenAnimationBuilder<double>(
+      key: ValueKey<String>('anim_$id'),
+      tween: Tween<double>(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 380),
+      curve: Curves.easeOutCubic,
+      builder: (context, t, Widget? child) {
+        return Opacity(
+          opacity: t,
+          child: Transform.translate(
+            offset: Offset(0, 10 * (1 - t)),
+            child: child,
+          ),
+        );
+      },
+      child: _taskCard(task),
+    );
+  }
+
   Widget _taskCard(Map<String, dynamic> task) {
     final id = task['id'].toString();
     final title = task['title']?.toString() ?? '';
@@ -356,7 +383,7 @@ class _TodayScreenState extends State<TodayScreen> {
     final showStrike = done || striking;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Dismissible(
         key: Key('task_$id'),
         direction: DismissDirection.endToStart,
@@ -376,13 +403,7 @@ class _TodayScreenState extends State<TodayScreen> {
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              boxShadow: AppTheme.cardShadow,
             ),
             child: IntrinsicHeight(
               child: Row(
@@ -492,167 +513,206 @@ class _TodayScreenState extends State<TodayScreen> {
       return Scaffold(
         backgroundColor: _kBg,
         appBar: AppBar(
-          backgroundColor: _kBg,
+          backgroundColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent,
           elevation: 0,
-          title: Text('Today', style: GoogleFonts.poppins(fontWeight: FontWeight.w700, color: _kText)),
+          centerTitle: true,
+          title: Text(
+            'Today',
+            style: GoogleFonts.poppins(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: _kText,
+            ),
+          ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.logout_rounded, color: _kText),
-              onPressed: () async {
-                await Supabase.instance.client.auth.signOut();
-                if (context.mounted) context.go('/login');
-              },
+              icon: const Icon(Icons.account_circle_outlined, color: _kText),
+              onPressed: () => context.push('/profile'),
             ),
           ],
         ),
-        body: const Center(child: CircularProgressIndicator(color: _kTeal)),
+        body: const SafeArea(
+          child: Center(child: CircularProgressIndicator(color: _kTeal)),
+        ),
       );
     }
 
     return Scaffold(
       backgroundColor: _kBg,
       appBar: AppBar(
-        backgroundColor: _kBg,
+        backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
-        title: Text('Today', style: GoogleFonts.poppins(fontWeight: FontWeight.w700, color: _kText)),
+        centerTitle: true,
+        title: Text(
+          'Today',
+          style: GoogleFonts.poppins(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: _kText,
+          ),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout_rounded, color: _kText),
-            onPressed: () async {
-              await Supabase.instance.client.auth.signOut();
-              if (context.mounted) context.go('/login');
-            },
+            icon: const Icon(Icons.account_circle_outlined, color: _kText),
+            onPressed: () => context.push('/profile'),
           ),
         ],
       ),
-      body: _tasks.isEmpty
-          ? RefreshIndicator(
-              color: _kTeal,
-              onRefresh: _loadTasks,
-              child: ListView(
-                padding: const EdgeInsets.only(top: 48),
-                children: [
-                  _headerCard(),
-                  SizedBox(height: MediaQuery.sizeOf(context).height * 0.15),
-                  Center(
-                    child: Column(
-                      children: [
-                        Icon(Icons.inbox_rounded, size: 56, color: _kGrey.withValues(alpha: 0.5)),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No tasks yet',
-                          style: GoogleFonts.poppins(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: _kGrey,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: _tasks.isEmpty
+              ? RefreshIndicator(
+                  color: _kTeal,
+                  onRefresh: _loadTasks,
+                  child: CustomScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      SliverToBoxAdapter(child: _headerCard()),
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.inbox_rounded,
+                                size: 56,
+                                color: _kGrey.withValues(alpha: 0.5),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'No tasks yet',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: _kGrey,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Tap Add task to get started',
+                                style: GoogleFonts.poppins(fontSize: 14, color: _kGrey),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Tap Add task to get started',
-                          style: GoogleFonts.poppins(fontSize: 14, color: _kGrey),
+                      ),
+                    ],
+                  ),
+                )
+              : RefreshIndicator(
+                  color: _kTeal,
+                  onRefresh: _loadTasks,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _headerCard(),
+                        if (_important.isNotEmpty) ...[
+                          _sectionTitle('Most Important', icon: Icons.star_rounded, iconColor: _kRedStar),
+                          ..._important.map(_animatedTaskCard),
+                        ],
+                        _sectionTitle("Today's Tasks", icon: Icons.checklist_rounded, iconColor: _kTeal),
+                        if (_today.isEmpty && _important.isEmpty && _done.isEmpty)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(
+                              'Nothing here - add your first task below.',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(fontSize: 14, color: _kGrey),
+                            ),
+                          )
+                        else if (_today.isEmpty && _important.isEmpty && _done.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(
+                              'All caught up for now - see Done below.',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(fontSize: 14, color: _kGrey),
+                            ),
+                          )
+                        else if (_today.isEmpty && _important.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(
+                              'Other tasks show here.',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(fontSize: 14, color: _kGrey),
+                            ),
+                          )
+                        else
+                          ..._today.map(_animatedTaskCard),
+                        Theme(
+                          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                          child: ExpansionTile(
+                            initiallyExpanded: false,
+                            tilePadding: const EdgeInsets.symmetric(horizontal: 4),
+                            childrenPadding: const EdgeInsets.only(bottom: 16),
+                            title: Row(
+                              children: [
+                                Icon(Icons.check_circle_rounded, color: _kGreenDone, size: 22),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Done',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: _kText,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  color: _kGreenDone,
+                                  size: 22,
+                                ),
+                              ],
+                            ),
+                            children: _done.isEmpty
+                                ? [
+                                    Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Text(
+                                        'Completed tasks appear here',
+                                        style: GoogleFonts.poppins(fontSize: 14, color: _kGrey),
+                                      ),
+                                    ),
+                                  ]
+                                : _done.map(_animatedTaskCard).toList(),
+                          ),
                         ),
+                        const SizedBox(height: 100),
                       ],
                     ),
                   ),
-                ],
-              ),
-            )
-          : RefreshIndicator(
-              color: _kTeal,
-              onRefresh: _loadTasks,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _headerCard(),
-                    if (_important.isNotEmpty) ...[
-                      _sectionTitle('Most Important', icon: Icons.star_rounded, iconColor: _kRedStar),
-                      ..._important.map(_taskCard),
-                    ],
-                    _sectionTitle("Today's Tasks", icon: Icons.checklist_rounded, iconColor: _kTeal),
-                    if (_today.isEmpty && _important.isEmpty && _done.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 32),
-                        child: Text(
-                          'Nothing here - add your first task below.',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.poppins(fontSize: 14, color: _kGrey),
-                        ),
-                      )
-                    else if (_today.isEmpty && _important.isEmpty && _done.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 32),
-                        child: Text(
-                          'All caught up for now - see Done below.',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.poppins(fontSize: 14, color: _kGrey),
-                        ),
-                      )
-                    else if (_today.isEmpty && _important.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 32),
-                        child: Text(
-                          'Other tasks show here.',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.poppins(fontSize: 14, color: _kGrey),
-                        ),
-                      )
-                    else
-                      ..._today.map(_taskCard),
-                    Theme(
-                      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-                      child: ExpansionTile(
-                        initiallyExpanded: false,
-                        tilePadding: const EdgeInsets.symmetric(horizontal: 20),
-                        childrenPadding: const EdgeInsets.only(bottom: 16),
-                        title: Row(
-                          children: [
-                            Icon(Icons.check_circle_rounded, color: _kGreenDone, size: 22),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Done',
-                              style: GoogleFonts.poppins(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: _kText,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Icon(
-                              Icons.keyboard_arrow_down_rounded,
-                              color: _kGreenDone,
-                              size: 22,
-                            ),
-                          ],
-                        ),
-                        children: _done.isEmpty
-                            ? [
-                                Padding(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Text(
-                                    'Completed tasks appear here',
-                                    style: GoogleFonts.poppins(fontSize: 14, color: _kGrey),
-                                  ),
-                                ),
-                              ]
-                            : _done.map(_taskCard).toList(),
-                      ),
-                    ),
-                    const SizedBox(height: 100),
-                  ],
                 ),
-              ),
-            ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showAddTaskSheet,
-        backgroundColor: _kTeal,
-        foregroundColor: Colors.white,
-        elevation: 4,
-        icon: const Icon(Icons.add_rounded),
-        label: Text('Add task', style: GoogleFonts.poppins(fontWeight: FontWeight.w700)),
+        ),
+      ),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          FloatingActionButton.small(
+            heroTag: 'coach',
+            onPressed: () => context.push('/coach-viv'),
+            backgroundColor: const Color(0xFF9B7FD4),
+            child: const Icon(Icons.psychology, color: Colors.white),
+          ),
+          const SizedBox(height: 10),
+          FloatingActionButton.extended(
+            onPressed: _showAddTaskSheet,
+            backgroundColor: _kTeal,
+            foregroundColor: Colors.white,
+            elevation: 4,
+            icon: const Icon(Icons.add_rounded),
+            label: Text('Add task', style: GoogleFonts.poppins(fontWeight: FontWeight.w700)),
+          ),
+        ],
       ),
     );
   }

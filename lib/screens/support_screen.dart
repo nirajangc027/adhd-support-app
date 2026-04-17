@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -623,17 +624,39 @@ class _SupportScreenState extends State<SupportScreen> {
     final selected = _tab == tab;
     return Padding(
       padding: const EdgeInsets.only(right: 8),
-      child: ChoiceChip(
-        label: Text(label, style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-        selected: selected,
-        onSelected: (_) => setState(() => _tab = tab),
-        selectedColor: _kTeal,
-        backgroundColor: Colors.white,
-        side: BorderSide(color: selected ? _kTeal : const Color(0xFFE5E7EB)),
-        showCheckmark: false,
-        labelStyle: GoogleFonts.poppins(
-          color: selected ? Colors.white : _kGrey,
-          fontWeight: FontWeight.w600,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+        decoration: BoxDecoration(
+          color: selected ? _kTeal : Colors.white,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: selected ? _kTeal : const Color(0xFFE5E7EB)),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: _kTeal.withValues(alpha: 0.22),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => setState(() => _tab = tab),
+            borderRadius: BorderRadius.circular(999),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              child: Text(
+                label,
+                style: GoogleFonts.poppins(
+                  color: selected ? Colors.white : _kGrey,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -652,28 +675,40 @@ class _SupportScreenState extends State<SupportScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 5,
-            height: 170,
-            decoration: BoxDecoration(
-              color: left,
-              borderRadius: const BorderRadius.horizontal(left: Radius.circular(20)),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              width: 6,
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  bottomLeft: Radius.circular(20),
+                ),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    left.withValues(alpha: 0.95),
+                    left.withValues(alpha: 0.5),
+                  ],
+                ),
+              ),
             ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
                   Align(
                     alignment: Alignment.centerRight,
                     child: Container(
@@ -780,6 +815,7 @@ class _SupportScreenState extends State<SupportScreen> {
             ),
           ),
         ],
+        ),
       ),
     );
   }
@@ -794,28 +830,40 @@ class _SupportScreenState extends State<SupportScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 5,
-            height: 170,
-            decoration: BoxDecoration(
-              color: left,
-              borderRadius: const BorderRadius.horizontal(left: Radius.circular(20)),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              width: 6,
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  bottomLeft: Radius.circular(20),
+                ),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    left.withValues(alpha: 0.95),
+                    left.withValues(alpha: 0.5),
+                  ],
+                ),
+              ),
             ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
                   Align(
                     alignment: Alignment.centerRight,
                     child: Container(
@@ -930,6 +978,7 @@ class _SupportScreenState extends State<SupportScreen> {
             ),
           ),
         ],
+        ),
       ),
     );
   }
@@ -1071,6 +1120,70 @@ class _SupportScreenState extends State<SupportScreen> {
                   child: Center(child: CircularProgressIndicator(color: _kTeal)),
                 )
               else ...[
+                Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: _kTeal.withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.psychology, color: _kTeal),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Chat with Coach Viv',
+                              style: GoogleFonts.poppins(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: _kText,
+                              ),
+                            ),
+                            Text(
+                              'Warm coaching with practical strategies',
+                              style: GoogleFonts.poppins(fontSize: 13, color: _kGrey),
+                            ),
+                          ],
+                        ),
+                      ),
+                      FilledButton(
+                        onPressed: () => context.push('/coach-viv'),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: _kTeal,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          'Open',
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 if (_showEvents()) ...[
                   Text(
                     'Upcoming Events',

@@ -45,10 +45,14 @@ class _DumpScreenState extends State<DumpScreen> {
   String? _captureCategory;
   bool _loading = true;
   bool _saving = false;
+  bool _captureFocused = false;
 
   @override
   void initState() {
     super.initState();
+    _focusNode.addListener(() {
+      if (mounted) setState(() => _captureFocused = _focusNode.hasFocus);
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _focusNode.requestFocus();
     });
@@ -415,15 +419,22 @@ class _DumpScreenState extends State<DumpScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
-              child: Container(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOut,
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: _captureFocused ? const Color(0xFF4EC8C8) : Colors.transparent,
+                    width: 2,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.06),
-                      blurRadius: 16,
+                      color: (_captureFocused ? const Color(0xFF4EC8C8) : Colors.black)
+                          .withValues(alpha: _captureFocused ? 0.12 : 0.06),
+                      blurRadius: _captureFocused ? 20 : 16,
                       offset: const Offset(0, 5),
                     ),
                   ],
@@ -544,7 +555,21 @@ class _DumpScreenState extends State<DumpScreen> {
                             final catLabel = cat.isEmpty ? 'Uncategorised' : cat;
                             final color = _categoryColor(catLabel);
                             final isTask = cat.toLowerCase() == 'task';
-                            return Dismissible(
+                            return TweenAnimationBuilder<double>(
+                              key: ValueKey<String>('slide_${item.id}'),
+                              tween: Tween<double>(begin: 0, end: 1),
+                              duration: const Duration(milliseconds: 360),
+                              curve: Curves.easeOutCubic,
+                              builder: (context, t, Widget? child) {
+                                return Opacity(
+                                  opacity: t,
+                                  child: Transform.translate(
+                                    offset: Offset(24 * (1 - t), 0),
+                                    child: child,
+                                  ),
+                                );
+                              },
+                              child: Dismissible(
                               key: ValueKey(item.id),
                               direction: DismissDirection.endToStart,
                               confirmDismiss: (_) async {
@@ -570,7 +595,7 @@ class _DumpScreenState extends State<DumpScreen> {
                                     onTap: () => _openEditSheet(item),
                                     onLongPress: () => _openCategorySheet(item),
                                     child: Padding(
-                                      padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+                                      padding: const EdgeInsets.all(16),
                                       child: Row(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
@@ -651,6 +676,7 @@ class _DumpScreenState extends State<DumpScreen> {
                                   ),
                                 ),
                               ),
+                            ),
                             );
                           },
                         ),

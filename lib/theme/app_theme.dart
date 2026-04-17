@@ -4,6 +4,15 @@ import 'package:google_fonts/google_fonts.dart';
 class AppTheme {
   AppTheme._();
 
+  /// Standard elevated card shadow used across screens.
+  static List<BoxShadow> get cardShadow => [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.06),
+          blurRadius: 12,
+          offset: const Offset(0, 4),
+        ),
+      ];
+
   static const background = Color(0xFFF8F3FF); // warm off-white with purple tint
   static const primary = Color(0xFF4EC8C8); // soft teal
   static const secondary = Color(0xFFE8C8D8); // warm pink
@@ -34,10 +43,17 @@ class AppTheme {
         displayColor: textPrimary,
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: background,
+        backgroundColor: Colors.transparent,
         foregroundColor: textPrimary,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        centerTitle: true,
+        titleTextStyle: GoogleFonts.poppins(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: textPrimary,
+        ),
       ),
       cardTheme: CardThemeData(
         color: cardColor,

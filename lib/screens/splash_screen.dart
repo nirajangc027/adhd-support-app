@@ -10,15 +10,57 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
   static const _teal = Color(0xFF4EC8C8);
   static const _bg = Color(0xFFF8F3FF);
   static const _titleColor = Color(0xFF2D2D3A);
   static const _subtitleColor = Color(0xFF8A8A9A);
 
+  late AnimationController _logoController;
+  late Animation<double> _logoScale;
+  late AnimationController _titleController;
+  late Animation<double> _titleOpacity;
+  late AnimationController _taglineController;
+  late Animation<double> _taglineOpacity;
+
   @override
   void initState() {
     super.initState();
+    _logoController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1100),
+    );
+    _logoScale = CurvedAnimation(
+      parent: _logoController,
+      curve: Curves.elasticOut,
+    );
+
+    _titleController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _titleOpacity = CurvedAnimation(
+      parent: _titleController,
+      curve: Curves.easeOut,
+    );
+
+    _taglineController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 550),
+    );
+    _taglineOpacity = CurvedAnimation(
+      parent: _taglineController,
+      curve: Curves.easeOut,
+    );
+
+    _logoController.forward();
+    Future<void>.delayed(const Duration(milliseconds: 280), () {
+      if (mounted) _titleController.forward();
+    });
+    Future<void>.delayed(const Duration(milliseconds: 620), () {
+      if (mounted) _taglineController.forward();
+    });
+
     _routeAfterDelay();
   }
 
@@ -31,6 +73,14 @@ class _SplashScreenState extends State<SplashScreen> {
     } else {
       context.go('/login');
     }
+  }
+
+  @override
+  void dispose() {
+    _logoController.dispose();
+    _titleController.dispose();
+    _taglineController.dispose();
+    super.dispose();
   }
 
   @override
@@ -52,44 +102,56 @@ class _SplashScreenState extends State<SplashScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _teal.withValues(alpha: 0.2),
-                  ),
-                  alignment: Alignment.center,
-                  child: const Icon(
-                    Icons.psychology_rounded,
-                    size: 60,
-                    color: _teal,
+                ScaleTransition(
+                  scale: _logoScale,
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _teal.withValues(alpha: 0.2),
+                    ),
+                    alignment: Alignment.center,
+                    child: const Icon(
+                      Icons.psychology_rounded,
+                      size: 60,
+                      color: _teal,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),
-                Text(
-                  'ADHD Support',
-                  style: GoogleFonts.poppins(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w700,
-                    color: _titleColor,
+                FadeTransition(
+                  opacity: _titleOpacity,
+                  child: Text(
+                    'ADHD Support',
+                    style: GoogleFonts.poppins(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w700,
+                      color: _titleColor,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  'Your daily companion',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    color: _subtitleColor,
+                FadeTransition(
+                  opacity: _taglineOpacity,
+                  child: Text(
+                    'Your daily companion',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      color: _subtitleColor,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 40),
-                const SizedBox(
-                  width: 28,
-                  height: 28,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    color: _teal,
+                FadeTransition(
+                  opacity: _titleOpacity,
+                  child: const SizedBox(
+                    width: 28,
+                    height: 28,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: _teal,
+                    ),
                   ),
                 ),
               ],

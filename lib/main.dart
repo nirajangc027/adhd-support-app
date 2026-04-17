@@ -7,19 +7,24 @@ import 'screens/dump_screen.dart';
 import 'screens/feel_screen.dart';
 import 'screens/focus_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/coach_viv_screen.dart';
+import 'screens/profile_screen.dart';
 import 'screens/signup_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/support_screen.dart';
 import 'screens/today_screen.dart';
+import 'services/notification_service.dart';
 import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await NotificationService.configureLocalTimeZone();
   await Supabase.initialize(
     url: 'https://hadcnsywhfnqylgpgsoe.supabase.co',
     anonKey:
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhhZGNuc3l3aGZucXlsZ3Bnc29lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNTE4NDQsImV4cCI6MjA4OTcyNzg0NH0.Utw1gyolUJGnCNrzjSEicJOj4ghm6LCRtInk-2JDlNk',
   );
+  await NotificationService().initialize();
   runApp(const ProviderScope(child: App()));
 }
 
@@ -41,23 +46,85 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/splash',
         name: 'splash',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const SplashScreen(),
+        pageBuilder: (context, state) => CustomTransitionPage<void>(
+          key: state.pageKey,
+          child: const SplashScreen(),
+          transitionDuration: const Duration(milliseconds: 400),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+              child: child,
+            );
+          },
+        ),
       ),
       GoRoute(
         path: '/login',
         name: 'login',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const LoginScreen(),
+        pageBuilder: (context, state) => CustomTransitionPage<void>(
+          key: state.pageKey,
+          child: const LoginScreen(),
+          transitionDuration: const Duration(milliseconds: 350),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+              child: child,
+            );
+          },
+        ),
       ),
       GoRoute(
         path: '/signup',
         name: 'signup',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const SignupScreen(),
+        pageBuilder: (context, state) => CustomTransitionPage<void>(
+          key: state.pageKey,
+          child: const SignupScreen(),
+          transitionDuration: const Duration(milliseconds: 350),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+              child: child,
+            );
+          },
+        ),
       ),
       GoRoute(
         path: '/home',
         redirect: (context, state) => '/home/today',
+      ),
+      GoRoute(
+        path: '/profile',
+        name: 'profile',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => CustomTransitionPage<void>(
+          key: state.pageKey,
+          child: const ProfileScreen(),
+          transitionDuration: const Duration(milliseconds: 300),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+              child: child,
+            );
+          },
+        ),
+      ),
+      GoRoute(
+        path: '/coach-viv',
+        name: 'coachViv',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => CustomTransitionPage<void>(
+          key: state.pageKey,
+          child: const CoachVivScreen(),
+          transitionDuration: const Duration(milliseconds: 300),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+              child: child,
+            );
+          },
+        ),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
@@ -128,6 +195,7 @@ class App extends ConsumerWidget {
     final router = ref.watch(goRouterProvider);
     return MaterialApp.router(
       title: 'ADHD Support Australia',
+      debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       routerConfig: router,
     );
