@@ -1355,6 +1355,7 @@ class _EventRegistrationSheetState extends State<_EventRegistrationSheet> {
   Future<void> _submit() async {
     if (_name.text.trim().isEmpty || _email.text.trim().isEmpty || _loading) return;
     if (Supabase.instance.client.auth.currentUser?.id == null) return;
+    final messenger = ScaffoldMessenger.of(context);
     setState(() => _loading = true);
     try {
       await Supabase.instance.client.from('event_registrations').insert({
@@ -1378,6 +1379,15 @@ class _EventRegistrationSheetState extends State<_EventRegistrationSheet> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _loading = false);
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            'Could not complete registration. Please try again.',
+            style: GoogleFonts.poppins(),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -1625,23 +1635,21 @@ class _CourseEnrollmentSheetState extends State<_CourseEnrollmentSheet> {
   }
 
   Future<void> _saveEnrollment({
-    required String status,
     required String paymentStatus,
+    String? notes,
   }) async {
     if (_loading) return;
     final uid = Supabase.instance.client.auth.currentUser?.id;
     if (uid == null) return;
+    final messenger = ScaffoldMessenger.of(context);
     setState(() => _loading = true);
     try {
       await Supabase.instance.client.from('enrollments').insert({
         'user_id': uid,
         'course_id': widget.course.id,
-        'status': status,
+        'status': 'enrolled',
         'payment_status': paymentStatus,
-        'full_name': _name.text.trim().isEmpty ? null : _name.text.trim(),
-        'email': _email.text.trim().isEmpty ? null : _email.text.trim(),
-        'phone': _phone.text.trim().isEmpty ? null : _phone.text.trim(),
-        'questions': _question.text.trim().isEmpty ? null : _question.text.trim(),
+        'notes': notes,
       });
       await widget.onEnrolled();
       if (!mounted) return;
@@ -1649,11 +1657,20 @@ class _CourseEnrollmentSheetState extends State<_CourseEnrollmentSheet> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _loading = false);
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            'Could not save enrollment. Please try again.',
+            style: GoogleFonts.poppins(),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
   Future<void> _enrolFree() async {
-    await _saveEnrollment(status: 'enrolled', paymentStatus: 'free');
+    await _saveEnrollment(paymentStatus: 'free');
     if (!mounted) return;
     setState(() {
       _doneTitle = "You're enrolled!";
@@ -1663,7 +1680,7 @@ class _CourseEnrollmentSheetState extends State<_CourseEnrollmentSheet> {
   }
 
   Future<void> _payOnline() async {
-    await _saveEnrollment(status: 'enrolled', paymentStatus: 'pending');
+    await _saveEnrollment(paymentStatus: 'pending');
     if (!mounted) return;
     await widget.openExternal(widget.course.purchaseUrl);
     if (!mounted) return;
@@ -1676,7 +1693,16 @@ class _CourseEnrollmentSheetState extends State<_CourseEnrollmentSheet> {
 
   Future<void> _submitInterest() async {
     if (_name.text.trim().isEmpty || _email.text.trim().isEmpty) return;
-    await _saveEnrollment(status: 'interest', paymentStatus: 'interest');
+    final noteParts = <String>[
+      if (_name.text.trim().isNotEmpty) 'Full Name: ${_name.text.trim()}',
+      if (_email.text.trim().isNotEmpty) 'Email: ${_email.text.trim()}',
+      if (_phone.text.trim().isNotEmpty) 'Phone: ${_phone.text.trim()}',
+      if (_question.text.trim().isNotEmpty) 'Questions: ${_question.text.trim()}',
+    ];
+    await _saveEnrollment(
+      paymentStatus: 'interest',
+      notes: noteParts.isEmpty ? null : noteParts.join('\n'),
+    );
     if (!mounted) return;
     setState(() {
       _doneTitle = 'Interest registered!';

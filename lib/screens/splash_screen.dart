@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -61,14 +62,19 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       if (mounted) _taglineController.forward();
     });
 
-    _routeAfterDelay();
+    _checkOnboarding();
   }
 
-  Future<void> _routeAfterDelay() async {
+  Future<void> _checkOnboarding() async {
     await Future<void>.delayed(const Duration(seconds: 2));
     if (!mounted) return;
+    final prefs = await SharedPreferences.getInstance();
+    final complete = prefs.getBool('onboarding_complete') ?? false;
     final session = Supabase.instance.client.auth.currentSession;
-    if (session != null) {
+
+    if (!complete) {
+      context.go('/onboarding');
+    } else if (session != null) {
       context.go('/home');
     } else {
       context.go('/login');
